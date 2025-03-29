@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="A 3D tower defense game with low-poly graphics">
+    <meta name="theme-color" content="#44aaff">
+    <title>Tower Defense Game</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><path d='M50 5L95 95H5L50 5Z' fill='%2344aaff' stroke='%23333' stroke-width='2'/><circle cx='50' cy='60' r='15' fill='%233399cc'/></svg>">
+    <link rel="stylesheet" href="assets/styles/main.css">
+</head>
+<body>
+    <div id="game-container">
+        <div id="loading-screen">Loading...</div>
+        <div id="game-ui">
+            <div id="resources">Resources: <span id="resource-count">100</span></div>
+            <div id="wave">Wave: <span id="wave-number">1</span></div>
+            <div id="health">Base Health: <span id="health-count">100</span></div>
+            <button id="start-wave">Start Wave</button>
+        </div>
+    </div>
+
+    <!-- Three.js -->
+    <script async src="https://unpkg.com/es-module-shims/dist/es-module-shims.js"></script>
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
+
+    <!-- Game Scripts -->
+    <script type="module" src="src/assets/GameAssets.js"></script>
+    <script type="module" src="src/core/Game.js"></script>
+    <script type="module" src="src/main.js"></script>
+</body>
+</html>
