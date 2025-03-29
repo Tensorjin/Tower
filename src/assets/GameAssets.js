@@ -25,8 +25,10 @@ export function createEnemy() {
     const bodyGeometry = new THREE.IcosahedronGeometry(0.5, 0);
     const bodyMaterial = createMaterial(0xff5533);
     const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+    body.castShadow = true; // Enemy body casts shadow
+    body.receiveShadow = true; // Enemy body can receive shadow
     enemyGroup.add(body);
-    
+
     // Add eyes
     const eyeGeometry = new THREE.SphereGeometry(0.1, 4, 4);
     const eyeMaterial = createMaterial(0xffffff);
@@ -55,9 +57,9 @@ export function createEnemy() {
     // Add stubby legs
     const legGeometry = new THREE.CylinderGeometry(0.1, 0.1, 0.3, 5);
     const legMaterial = createMaterial(0xe8432e);
-    
     for (let i = 0; i < 4; i++) {
         const leg = new THREE.Mesh(legGeometry, legMaterial);
+        leg.castShadow = true; // Legs cast shadow
         const angle = (i * Math.PI / 2);
         const x = Math.cos(angle) * 0.4;
         const z = Math.sin(angle) * 0.4;
@@ -105,16 +107,20 @@ export function createBasicTower() {
     const baseGeometry = new THREE.CylinderGeometry(0.6, 0.8, 0.5, 6);
     const baseMaterial = createMaterial(0x44aadd);
     const base = new THREE.Mesh(baseGeometry, baseMaterial);
+    base.castShadow = true;
+    base.receiveShadow = true;
     base.position.y = 0.25;
     towerGroup.add(base);
-    
+
     // Middle section
     const middleGeometry = new THREE.CylinderGeometry(0.5, 0.6, 0.5, 6);
     const middleMaterial = createMaterial(0x3399cc);
     const middle = new THREE.Mesh(middleGeometry, middleMaterial);
+    middle.castShadow = true;
+    middle.receiveShadow = true;
     middle.position.y = 0.75;
     towerGroup.add(middle);
-    
+
     // Create turret group (this will rotate to aim)
     const turretGroup = new THREE.Group();
     turretGroup.position.y = 1.1;
@@ -125,12 +131,15 @@ export function createBasicTower() {
     const turretBaseGeometry = new THREE.CylinderGeometry(0.4, 0.5, 0.2, 6);
     const turretBaseMaterial = createMaterial(0xaaddff);
     const turretBase = new THREE.Mesh(turretBaseGeometry, turretBaseMaterial);
+    turretBase.castShadow = true;
+    turretBase.receiveShadow = true;
     turretGroup.add(turretBase);
-    
+
     // Cannon
     const cannonGeometry = new THREE.CylinderGeometry(0.15, 0.2, 0.6, 6);
     const cannonMaterial = createMaterial(0x333333);
     const cannon = new THREE.Mesh(cannonGeometry, cannonMaterial);
+    cannon.castShadow = true;
     cannon.rotation.x = Math.PI / 2;
     cannon.position.z = 0.4;
     turretGroup.add(cannon);
@@ -182,9 +191,10 @@ export function createTile(type = 'buildable') {
     const tileGeometry = new THREE.CylinderGeometry(1, 1, 0.2, 6);
     const tileMaterial = createMaterial(color);
     const tile = new THREE.Mesh(tileGeometry, tileMaterial);
+    tile.receiveShadow = true; // Tiles receive shadows
     tile.position.y = 0.1;
     tileGroup.add(tile);
-    
+
     // Add special features based on tile type
     if (type === 'start' || type === 'end') {
         const portalGeometry = new THREE.TorusGeometry(0.6, 0.1, 8, 16);

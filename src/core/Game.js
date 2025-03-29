@@ -35,6 +35,8 @@ export class Game {
         // Setup renderer
         this.renderer.setSize(window.innerWidth, window.innerHeight);
         this.renderer.setPixelRatio(window.devicePixelRatio);
+        this.renderer.shadowMap.enabled = true; // Enable shadows
+        this.renderer.shadowMap.type = THREE.PCFSoftShadowMap; // Softer shadows
         document.getElementById('game-container').appendChild(this.renderer.domElement);
         // Setup camera
         this.camera.position.set(8, 15, 18); // Adjusted camera position for better overview
@@ -52,9 +54,21 @@ export class Game {
         // Add lights
         const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
         this.scene.add(ambientLight);
-
         const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-        directionalLight.position.set(10, 20, 10);
+        directionalLight.position.set(15, 25, 20); // Adjust position for better shadow angle
+        directionalLight.castShadow = true; // Enable shadow casting for this light
+        // Configure shadow properties
+        directionalLight.shadow.mapSize.width = 1024; // Shadow map resolution
+        directionalLight.shadow.mapSize.height = 1024;
+        directionalLight.shadow.camera.near = 0.5;
+        directionalLight.shadow.camera.far = 60;
+        directionalLight.shadow.camera.left = -20;
+        directionalLight.shadow.camera.right = 20;
+        directionalLight.shadow.camera.top = 20;
+        directionalLight.shadow.camera.bottom = -20;
+        // Optional: Add shadow camera helper for debugging
+        // const shadowHelper = new THREE.CameraHelper(directionalLight.shadow.camera);
+        // this.scene.add(shadowHelper);
         this.scene.add(directionalLight);
 
         // Create game world
@@ -217,6 +231,16 @@ export class Game {
                 enemy.position.copy(targetPoint);
                 enemy.userData.pathIndex++;
             } else {
+                // Calculate target rotation
+                const targetQuaternion = new THREE.Quaternion();
+                const lookAtPosition = enemy.position.clone().add(direction); // Position to look at
+                const matrix = new THREE.Matrix4();
+                matrix.lookAt(enemy.position, lookAtPosition, enemy.up); // Use enemy's up vector
+                targetQuaternion.setFromRotationMatrix(matrix);
+
+                // Smoothly rotate towards the target direction using slerp
+                enemy.quaternion.slerp(targetQuaternion, deltaTime * 5.0); // Adjust rotation speed (5.0) as needed
+
                 enemy.position.add(direction.multiplyScalar(moveDistance));
             }
 
