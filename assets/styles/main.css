@@ -44,6 +44,12 @@ body {
     font-size: 18px;
 }
 
+#tower-info {
+    margin-top: 15px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(255, 255, 255, 0.3);
+}
+
 #start-wave {
     background: #4CAF50;
     color: white;

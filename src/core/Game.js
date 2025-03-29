@@ -17,6 +17,8 @@ const waveConfig = [
     { count: 12, delay: 0.6 }, // Wave 3
 ];
 
+const TOWER_COST = 50; // Define tower cost
+
 export class Game {
     constructor() {
         this.scene = new THREE.Scene();
@@ -28,7 +30,7 @@ export class Game {
 
         this.init();
     }
-    
+
     init() {
         // Setup renderer
         this.renderer.setSize(window.innerWidth, window.innerHeight);
@@ -50,15 +52,15 @@ export class Game {
         // Add lights
         const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
         this.scene.add(ambientLight);
-        
+
         const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
         directionalLight.position.set(10, 20, 10);
         this.scene.add(directionalLight);
-        
+
         // Create game world
         this.world = createGameWorld();
         this.scene.add(this.world);
-        
+
         // Initialize game state
         this.towers = [];
         this.enemies = [];
@@ -76,7 +78,7 @@ export class Game {
 
         // Handle window resize
         window.addEventListener('resize', () => this.onWindowResize());
-        
+
         // Add mouse move listener for placement helper
         this.renderer.domElement.addEventListener('mousemove', (event) => this.onMouseMove(event));
         // Add click event listener for tower placement
@@ -84,7 +86,7 @@ export class Game {
 
         // Hide loading screen
         document.getElementById('loading-screen').style.display = 'none';
-        
+
         // Start game loop
         this.gameState = 'idle'; // Initial state before first wave
         this.updateUI(); // Initial UI update
@@ -95,6 +97,7 @@ export class Game {
         document.getElementById('resource-count').textContent = this.resources;
         document.getElementById('health-count').textContent = this.baseHealth;
         document.getElementById('wave-number').textContent = this.currentWave > 0 ? this.currentWave : '-';
+        document.getElementById('tower-cost').textContent = TOWER_COST; // Display tower cost
 
         const startButton = document.getElementById('start-wave');
         if (this.gameState === 'idle' || this.gameState === 'wave_complete') {
@@ -119,18 +122,18 @@ export class Game {
         this.camera.updateProjectionMatrix();
         this.renderer.setSize(window.innerWidth, window.innerHeight);
     }
-    
+
     onMouseClick(event) {
         // Convert mouse position to normalized device coordinates
         const mouse = new THREE.Vector2(
             (event.clientX / window.innerWidth) * 2 - 1,
             -(event.clientY / window.innerHeight) * 2 + 1
         );
-        
+
         // Create raycaster
         const raycaster = new THREE.Raycaster();
         raycaster.setFromCamera(mouse, this.camera);
-        
+
         // Find intersections with tiles
         const intersects = raycaster.intersectObjects(this.world.children, true);
         if (intersects.length > 0) {
@@ -139,32 +142,36 @@ export class Game {
             while (clickedObject.parent && clickedObject.userData.type !== 'tile') {
                 clickedObject = clickedObject.parent;
             }
-            
             const tile = clickedObject; // Now it should be the tile group
 
-            if (tile && tile.userData.type === 'tile' && tile.userData.buildable && this.resources >= 50) {
-                // Place tower
-                const tower = createBasicTower();
-                tower.position.copy(tile.position);
-                tower.position.y = 0.2; // Adjust height
-                this.scene.add(tower);
-                this.towers.push(tower);
+            if (tile && tile.userData.type === 'tile' && tile.userData.buildable) {
+                if (this.resources >= TOWER_COST) { // Check resources before placing
+                    // Place tower
+                    const tower = createBasicTower();
+                    tower.position.copy(tile.position);
+                    tower.position.y = 0.2; // Adjust height
+                    this.scene.add(tower);
+                    this.towers.push(tower);
 
-                // Hide placement helper after placing
-                if (this.placementHelper) {
-                    this.placementHelper.visible = false;
+                    // Deduct resources and update UI
+                    this.resources -= TOWER_COST;
+                    this.updateUI();
+
+                    // Mark tile as non-buildable
+                    tile.userData.buildable = false;
+
+                    // Hide placement helper after placing
+                    if (this.placementHelper) {
+                        this.placementHelper.visible = false;
+                    }
+                } else {
+                    console.log("Not enough resources to build tower!"); // Simple feedback
+                    // TODO: Add visual feedback to the player (e.g., flash resource counter red)
                 }
-                
-                // Update resources
-                this.resources -= 50;
-                document.getElementById('resource-count').textContent = this.resources;
-                
-                // Mark tile as non-buildable
-                tile.userData.buildable = false;
             }
         }
     }
-    
+
     spawnEnemy() {
         const enemy = createEnemy();
         enemy.position.copy(this.enemyPath[0]); // Start at the beginning of the path
@@ -172,14 +179,14 @@ export class Game {
         enemy.userData.health = enemy.userData.maxHealth; // Give enemy health
         enemy.userData.pathIndex = 0; // Current target point index
         enemy.userData.speed = 1.5; // Movement speed
-        
+
         // Initialize health bar visibility
         if (enemy.userData.healthBar) {
             enemy.userData.healthBar.background.visible = true;
             enemy.userData.healthBar.foreground.visible = true;
             this.updateEnemyHealthBar(enemy); // Set initial scale
         }
-        
+
         this.scene.add(enemy);
         this.enemies.push(enemy);
     }
@@ -187,7 +194,7 @@ export class Game {
     updateEnemies(deltaTime) {
         for (let i = this.enemies.length - 1; i >= 0; i--) {
             const enemy = this.enemies[i];
-            
+
             // Check if enemy reached the end
             if (enemy.userData.pathIndex >= this.enemyPath.length - 1) {
                 this.baseHealth -= 10; // Reduce base health
@@ -250,10 +257,10 @@ export class Game {
                 if (target) {
                     // Aim turret
                     tower.userData.turret.lookAt(target.position);
-                    
+
                     // Shoot projectile
                     this.shootProjectile(tower, target);
-                    
+
                     // Reset cooldown
                     tower.userData.attackCooldown = 1 / tower.userData.attackSpeed;
                 }
@@ -264,13 +271,13 @@ export class Game {
     shootProjectile(tower, target) {
         const projectile = createProjectile();
         // Start projectile slightly above the cannon
-        const startPosition = tower.userData.turret.localToWorld(new THREE.Vector3(0, 0.1, 0.5)); 
+        const startPosition = tower.userData.turret.localToWorld(new THREE.Vector3(0, 0.1, 0.5));
         projectile.position.copy(startPosition);
-        
+
         projectile.userData.target = target;
         projectile.userData.speed = 10; // Projectile speed
         projectile.userData.damage = tower.userData.damage;
-        
+
         this.scene.add(projectile);
         this.projectiles.push(projectile);
     }
@@ -307,12 +314,12 @@ export class Game {
                         this.removeEnemy(target, enemyIndex, true); // Remove with effect
                     }
                 }
-                
+
                 this.removeProjectile(projectile, i);
             }
         }
     }
-    
+
     removeEnemy(enemy, index, useEffect = false) {
         if (useEffect) {
             const effect = createDeathEffect(enemy.position);
@@ -356,11 +363,26 @@ export class Game {
         // Update controls
         this.controls.update();
 
-        // Update game objects
-        this.updateEnemies(deltaTime);
-        this.updateTowers(deltaTime);
-        this.updateProjectiles(deltaTime);
-        this.updateEffects(deltaTime);
+        // Only update game logic if not game over or victory
+        if (this.gameState !== 'game_over' && this.gameState !== 'victory') {
+            // Handle wave spawning
+            this.updateWaveSpawning(deltaTime);
+
+            // Update game objects
+            this.updateEnemies(deltaTime);
+            this.updateTowers(deltaTime);
+            this.updateProjectiles(deltaTime);
+            this.updateEffects(deltaTime);
+
+            // Check for wave completion
+            if (this.gameState === 'wave_active' && this.enemies.length === 0 && this.enemiesToSpawn === 0) {
+                 this.setGameState('wave_complete');
+                 // Check for victory
+                 if (this.currentWave >= this.waveConfig.length) {
+                     this.setGameState('victory');
+                 }
+            }
+        }
 
         // Render scene
         this.renderer.render(this.scene, this.camera);
