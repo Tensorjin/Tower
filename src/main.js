@@ -8,8 +8,9 @@ window.addEventListener('DOMContentLoaded', () => {
     // Setup UI event listeners
     const startWaveButton = document.getElementById('start-wave');
     startWaveButton.addEventListener('click', () => {
-        if (game) {
-            game.startNextWave(); // Call the game's method to start the wave
+        // Access the wave system through the game instance
+        if (game && game.waveSystem) {
+            game.waveSystem.startNextWave();
         }
     });
 
