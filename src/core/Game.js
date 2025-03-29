@@ -231,23 +231,27 @@ export class Game {
                 enemy.position.copy(targetPoint);
                 enemy.userData.pathIndex++;
             } else {
-                // Calculate target rotation
-                const targetQuaternion = new THREE.Quaternion();
-                const lookAtPosition = enemy.position.clone().add(direction); // Position to look at
-                const matrix = new THREE.Matrix4();
-                matrix.lookAt(enemy.position, lookAtPosition, enemy.up); // Use enemy's up vector
-                targetQuaternion.setFromRotationMatrix(matrix);
+                // --- Smooth Rotation using atan2 ---
+                // Calculate target angle on XZ plane
+                const targetAngle = Math.atan2(direction.x, direction.z);
 
-                // Smoothly rotate towards the target direction using slerp
-                enemy.quaternion.slerp(targetQuaternion, deltaTime * 5.0); // Adjust rotation speed (5.0) as needed
+                // Smoothly interpolate the rotation angle (shortest path)
+                const currentAngle = enemy.rotation.y;
+                let angleDiff = targetAngle - currentAngle;
+                // Adjust angle difference to be in [-PI, PI] range
+                while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
+                while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
+
+                // Apply rotation (adjust rotation speed 5.0 as needed)
+                enemy.rotation.y += angleDiff * deltaTime * 5.0; 
+                // --- End Smooth Rotation ---
 
                 enemy.position.add(direction.multiplyScalar(moveDistance));
             }
 
-            // Make health bar face camera (billboarding)
-            if (enemy.userData.healthBar) {
-                enemy.userData.healthBar.background.quaternion.copy(this.camera.quaternion);
-                enemy.userData.healthBar.foreground.quaternion.copy(this.camera.quaternion);
+            // Make health bar group face camera (billboarding)
+            if (enemy.userData.healthBar && enemy.userData.healthBar.group) {
+                enemy.userData.healthBar.group.quaternion.copy(this.camera.quaternion);
             }
         }
     }
@@ -463,13 +467,14 @@ export class Game {
         const healthBar = enemy.userData.healthBar;
 
         healthBar.foreground.scale.x = healthPercent;
-        // Adjust position so it scales from the left
+        // Adjust position so it scales from the left relative to the group
         healthBar.foreground.position.x = - (healthBar.maxWidth * (1 - healthPercent)) / 2;
 
-        // Hide bar if health is zero or less
+        // Hide bar group if health is zero or less
         if (healthPercent <= 0) {
-            healthBar.background.visible = false;
-            healthBar.foreground.visible = false;
+            healthBar.group.visible = false;
+        } else {
+            healthBar.group.visible = true; // Ensure it's visible if health > 0
         }
     }
 
