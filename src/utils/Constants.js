@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 
 export const TOWER_COST = 50;
-const ENEMY_Y_POS = 0.6; // Slightly raise enemies
+const ENEMY_Y_POS = 0.2; // Set Y position to the tile surface height
 
 // Define the path for enemies (array of Vector3 points)
 // Coordinates match the tile centers from createGameWorld

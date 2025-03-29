@@ -21,10 +21,13 @@ function createMaterial(color = 0x44aaff, isEmissive = false) {
 export function createEnemy() {
     const enemyGroup = new THREE.Group();
     
+    const yShift = 0.55; // Amount to shift model up so base is at y=0
+
     // Enemy body (main sphere)
     const bodyGeometry = new THREE.IcosahedronGeometry(0.5, 0);
     const bodyMaterial = createMaterial(0xff5533);
     const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+    body.position.y += yShift; // Apply shift
     body.castShadow = true; // Enemy body casts shadow
     body.receiveShadow = true; // Enemy body can receive shadow
     enemyGroup.add(body);
@@ -32,13 +35,13 @@ export function createEnemy() {
     // Add eyes
     const eyeGeometry = new THREE.SphereGeometry(0.1, 4, 4);
     const eyeMaterial = createMaterial(0xffffff);
-    
+
     const leftEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
-    leftEye.position.set(0.25, 0.2, 0.4);
-    
+    leftEye.position.set(0.25, 0.2 + yShift, 0.4); // Apply shift
+
     const rightEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
-    rightEye.position.set(-0.25, 0.2, 0.4);
-    
+    rightEye.position.set(-0.25, 0.2 + yShift, 0.4); // Apply shift
+
     // Pupils
     const pupilGeometry = new THREE.SphereGeometry(0.05, 4, 4);
     const pupilMaterial = createMaterial(0x000000);
@@ -63,18 +66,18 @@ export function createEnemy() {
         const angle = (i * Math.PI / 2);
         const x = Math.cos(angle) * 0.4;
         const z = Math.sin(angle) * 0.4;
-        
-        leg.position.set(x, -0.4, z);
+
+        leg.position.set(x, -0.4 + yShift, z); // Apply shift
         leg.rotation.x = Math.PI / 2;
         enemyGroup.add(leg);
     }
-    
+
     // Health Bar Group
     const healthBarGroup = new THREE.Group();
     const healthBarHeight = 0.15;
     const healthBarWidth = 1.0;
-    const healthBarOffsetY = 0.8; // Position above the enemy body
-    healthBarGroup.position.y = healthBarOffsetY; // Position the group
+    const healthBarOffsetY = 0.8; // This offset is now relative to the shifted body center
+    healthBarGroup.position.y = healthBarOffsetY + yShift; // Position the group, applying shift
     enemyGroup.add(healthBarGroup);
 
     // Background (red) - Position relative to the group (Y=0)
