@@ -168,9 +168,18 @@ export class Game {
     spawnEnemy() {
         const enemy = createEnemy();
         enemy.position.copy(this.enemyPath[0]); // Start at the beginning of the path
-        enemy.userData.health = 100; // Give enemy health
+        enemy.userData.maxHealth = 100; // Store max health
+        enemy.userData.health = enemy.userData.maxHealth; // Give enemy health
         enemy.userData.pathIndex = 0; // Current target point index
         enemy.userData.speed = 1.5; // Movement speed
+        
+        // Initialize health bar visibility
+        if (enemy.userData.healthBar) {
+            enemy.userData.healthBar.background.visible = true;
+            enemy.userData.healthBar.foreground.visible = true;
+            this.updateEnemyHealthBar(enemy); // Set initial scale
+        }
+        
         this.scene.add(enemy);
         this.enemies.push(enemy);
     }
@@ -202,6 +211,12 @@ export class Game {
                 enemy.userData.pathIndex++;
             } else {
                 enemy.position.add(direction.multiplyScalar(moveDistance));
+            }
+
+            // Make health bar face camera (billboarding)
+            if (enemy.userData.healthBar) {
+                enemy.userData.healthBar.background.quaternion.copy(this.camera.quaternion);
+                enemy.userData.healthBar.foreground.quaternion.copy(this.camera.quaternion);
             }
         }
     }
@@ -279,7 +294,8 @@ export class Game {
             // Check for collision
             if (projectile.position.distanceTo(target.position) < 0.5) { // Collision threshold
                 target.userData.health -= projectile.userData.damage;
-                
+                this.updateEnemyHealthBar(target); // Update health bar display
+
                 // Check if enemy died
                 if (target.userData.health <= 0) {
                     this.resources += 10; // Grant resources
@@ -391,6 +407,23 @@ export class Game {
                     this.setGameState('wave_active');
                 }
             }
+        }
+    }
+
+    updateEnemyHealthBar(enemy) {
+        if (!enemy.userData.healthBar) return;
+
+        const healthPercent = Math.max(0, enemy.userData.health / enemy.userData.maxHealth);
+        const healthBar = enemy.userData.healthBar;
+
+        healthBar.foreground.scale.x = healthPercent;
+        // Adjust position so it scales from the left
+        healthBar.foreground.position.x = - (healthBar.maxWidth * (1 - healthPercent)) / 2;
+
+        // Hide bar if health is zero or less
+        if (healthPercent <= 0) {
+            healthBar.background.visible = false;
+            healthBar.foreground.visible = false;
         }
     }
 

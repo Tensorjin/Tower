@@ -67,7 +67,33 @@ export function createEnemy() {
         enemyGroup.add(leg);
     }
     
+    // Health Bar
+    const healthBarHeight = 0.15;
+    const healthBarWidth = 1.0;
+    const healthBarOffsetY = 0.8; // Position above the enemy body
+
+    // Background (red)
+    const healthBarBgGeometry = new THREE.PlaneGeometry(healthBarWidth, healthBarHeight);
+    const healthBarBgMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000, side: THREE.DoubleSide });
+    const healthBarBg = new THREE.Mesh(healthBarBgGeometry, healthBarBgMaterial);
+    healthBarBg.position.y = healthBarOffsetY;
+    enemyGroup.add(healthBarBg);
+
+    // Foreground (green)
+    const healthBarFgGeometry = new THREE.PlaneGeometry(healthBarWidth, healthBarHeight);
+    const healthBarFgMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00, side: THREE.DoubleSide });
+    const healthBarFg = new THREE.Mesh(healthBarFgGeometry, healthBarFgMaterial);
+    healthBarFg.position.y = healthBarOffsetY;
+    healthBarFg.position.z = 0.01; // Slightly in front of the background
+    enemyGroup.add(healthBarFg);
+
     enemyGroup.userData.type = 'enemy';
+    enemyGroup.userData.healthBar = {
+        background: healthBarBg,
+        foreground: healthBarFg,
+        maxWidth: healthBarWidth
+    };
+
     return enemyGroup;
 }
 
