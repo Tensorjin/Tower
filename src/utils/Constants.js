@@ -1,12 +1,14 @@
 import * as THREE from 'three';
 
 export const TOWER_COST = 50;
+const ENEMY_Y_POS = 0.6; // Slightly raise enemies
 
 // Define the path for enemies (array of Vector3 points)
+// Coordinates match the tile centers from createGameWorld
 export const ENEMY_PATH = [
-    new THREE.Vector3(4, 0.5, 0),   // Start point (adjust based on map)
-    new THREE.Vector3(4, 0.5, 8.75), // Corner 1 (z = 5 * 1.75)
-    new THREE.Vector3(13, 0.5, 8.75), // End point (x = (6 + 0.5) * 2) - Check this calculation if map changes
+    new THREE.Vector3(4, ENEMY_Y_POS, 0),    // Start tile (x=2, z=0) -> x = (2 + 0*0.5)*2 = 4
+    new THREE.Vector3(5, ENEMY_Y_POS, 8.75), // Corner tile (x=2, z=5) -> x = (2 + 1*0.5)*2 = 5, z = 5 * 1.75 = 8.75
+    new THREE.Vector3(13, ENEMY_Y_POS, 8.75),// End tile (x=6, z=5) -> x = (6 + 1*0.5)*2 = 13
 ];
 
 // Wave Configuration: [ { count: number, delay: seconds } ]
