@@ -11,15 +11,48 @@
 </head>
 <body>
     <div id="game-container">
-        <div id="loading-screen">Loading...</div>
-        <div id="game-ui">
-            <div id="resources">Resources: <span id="resource-count">100</span></div>
-            <div id="wave">Wave: <span id="wave-number">-</span></div>
-            <div id="health">Base Health: <span id="health-count">100</span></div>
-            <div id="tower-info">
-                Tower Cost: <span id="tower-cost">50</span>
+        <div id="loading-screen">
+            <div class="loading-spinner"></div>
+        </div>
+        
+        <div class="game-hud">
+            <div class="resources-section">
+                <div class="resource-item">
+                    <span>Resources:</span>
+                    <span id="resource-count">100</span>
+                </div>
+                <div class="resource-item">
+                    <span>Health:</span>
+                    <span id="health-count">100</span>
+                </div>
             </div>
-            <button id="start-wave">Start Wave 1</button>
+
+            <div class="wave-section">
+                <div class="wave-info">
+                    <h3>Wave <span id="wave-number">-</span></h3>
+                    <div id="wave-composition" class="wave-composition">
+                        <!-- Enemy types will be added dynamically -->
+                    </div>
+                    <div class="progress-bar">
+                        <div id="wave-progress" class="progress-fill" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <div class="next-wave">
+                    <span>Next Wave:</span>
+                    <div id="next-wave-composition" class="next-wave-composition">
+                        <!-- Next wave preview will be added dynamically -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="tower-section">
+                <div class="tower-cost">
+                    <span>Tower Cost:</span>
+                    <span id="tower-cost">50</span>
+                </div>
+                <button id="start-wave">Start Wave</button>
+            </div>
         </div>
     </div>
 

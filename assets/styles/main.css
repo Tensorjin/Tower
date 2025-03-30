@@ -1,66 +1,151 @@
-body {
-    margin: 0;
-    padding: 0;
-    overflow: hidden;
-    background: #000;
+/* Add to existing CSS */
+
+.game-hud {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 15px;
+    border-radius: 8px;
     font-family: Arial, sans-serif;
+    user-select: none;
 }
 
-#game-container {
-    position: relative;
-    width: 100vw;
-    height: 100vh;
+.resources-section {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+    gap: 20px;
 }
 
+.resource-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.wave-section {
+    margin-top: 15px;
+}
+
+.wave-info {
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    padding-top: 10px;
+}
+
+.wave-composition {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    margin: 10px 0;
+    font-size: 0.9em;
+}
+
+.enemy-type {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.enemy-type-icon {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+}
+
+.enemy-basic { background: #ff5533; }
+.enemy-fast { background: #ffaa22; }
+.enemy-tank { background: #556677; }
+.enemy-flying { background: #9966ff; }
+.enemy-swarm { background: #22ff22; }
+.enemy-boss { background: #ff0066; }
+
+.progress-bar {
+    width: 100%;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 2px;
+    margin-top: 5px;
+}
+
+.progress-fill {
+    height: 100%;
+    background: #4CAF50;
+    border-radius: 2px;
+    transition: width 0.3s ease;
+}
+
+.next-wave {
+    margin-top: 10px;
+    font-size: 0.8em;
+    color: #aaa;
+}
+
+.next-wave-composition {
+    display: flex;
+    gap: 10px;
+    margin-top: 5px;
+}
+
+.tower-section {
+    margin-top: 15px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.tower-cost {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.9em;
+}
+
+#start-wave {
+    display: block;
+    width: 100%;
+    padding: 8px;
+    margin-top: 10px;
+    background: #4CAF50;
+    border: none;
+    border-radius: 4px;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+#start-wave:hover:not(:disabled) {
+    background: #45a049;
+}
+
+#start-wave:disabled {
+    background: #666;
+    cursor: not-allowed;
+}
+
+/* Loading Screen */
 #loading-screen {
-    position: absolute;
+    position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.8);
-    color: white;
+    background: #000;
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 24px;
-    z-index: 100;
+    z-index: 1000;
 }
 
-#game-ui {
-    position: absolute;
-    top: 20px;
-    left: 20px;
-    color: white;
-    z-index: 10;
-    background: rgba(0, 0, 0, 0.5);
-    padding: 15px;
-    border-radius: 5px;
-    user-select: none;
+.loading-spinner {
+    width: 50px;
+    height: 50px;
+    border: 5px solid #333;
+    border-top-color: #4CAF50;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
 }
 
-#game-ui > div {
-    margin-bottom: 10px;
-    font-size: 18px;
-}
-
-#tower-info {
-    margin-top: 15px;
-    padding-top: 10px;
-    border-top: 1px solid rgba(255, 255, 255, 0.3);
-}
-
-#start-wave {
-    background: #4CAF50;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 16px;
-    transition: background 0.3s;
-}
-
-#start-wave:hover {
-    background: #45a049;
+@keyframes spin {
+    to { transform: rotate(360deg); }
 }

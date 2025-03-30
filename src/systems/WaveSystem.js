@@ -8,6 +8,7 @@ export class WaveSystem {
         this.remainingEnemies = [];    // Queue of enemies to spawn
         this.spawnTimer = 0;
         this.spawnDelay = 0;
+        this.totalEnemiesInWave = 0;   // Track total enemies for progress bar
     }
 
     // Fisher-Yates shuffle algorithm
@@ -17,6 +18,13 @@ export class WaveSystem {
             [array[i], array[j]] = [array[j], array[i]];
         }
         return array;
+    }
+
+    getTotalEnemiesInWave() {
+        if (this.currentWave === 0 || this.currentWave > this.waveConfig.length) {
+            return 0;
+        }
+        return this.totalEnemiesInWave;
     }
 
     startNextWave() {
@@ -30,7 +38,11 @@ export class WaveSystem {
 
             // Create spawn queue from wave configuration
             this.remainingEnemies = [];
+            this.totalEnemiesInWave = 0; // Reset total count
+
+            // Calculate total enemies and create spawn queue
             for (const enemyGroup of waveData.enemies) {
+                this.totalEnemiesInWave += enemyGroup.count;
                 for (let i = 0; i < enemyGroup.count; i++) {
                     this.remainingEnemies.push(enemyGroup.type);
                 }

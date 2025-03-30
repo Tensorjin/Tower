@@ -146,7 +146,20 @@ export class Game {
 
     // --- UI Update ---
     updateUI() {
-        this.uiManager.updateUI(this.gameState, this.resources, this.baseHealth, this.waveSystem.getCurrentWaveNumber());
+        this.uiManager.updateUI(
+            this.gameState, 
+            this.resources, 
+            this.baseHealth, 
+            this.waveSystem.getCurrentWaveNumber(),
+            WAVE_CONFIG
+        );
+
+        // Update wave progress if a wave is active
+        if (this.gameState === GAME_STATES.WAVE_SPAWNING || this.gameState === GAME_STATES.WAVE_ACTIVE) {
+            const totalEnemies = this.waveSystem.getTotalEnemiesInWave();
+            const remainingEnemies = this.waveSystem.remainingEnemies.length + this.enemies.length;
+            this.uiManager.updateWaveProgress(remainingEnemies, totalEnemies);
+        }
     }
 
     // --- Event Handlers ---
