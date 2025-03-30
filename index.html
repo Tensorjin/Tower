@@ -10,66 +10,97 @@
     <link rel="stylesheet" href="assets/styles/main.css">
 </head>
 <body>
-    <div id="game-container">
-        <div id="loading-screen">
+    <div id="loading-screen">
+        <div class="loading-content">
             <div class="loading-spinner"></div>
-        </div>
-        
-        <div class="game-hud">
-            <div class="resources-section">
-                <div class="resource-item">
-                    <span>Resources:</span>
-                    <span id="resource-count">100</span>
-                </div>
-                <div class="resource-item">
-                    <span>Health:</span>
-                    <span id="health-count">100</span>
-                </div>
-            </div>
-
-            <div class="wave-section">
-                <div class="wave-info">
-                    <h3>Wave <span id="wave-number">-</span></h3>
-                    <div id="wave-composition" class="wave-composition">
-                        <!-- Enemy types will be added dynamically -->
-                    </div>
-                    <div class="progress-bar">
-                        <div id="wave-progress" class="progress-fill" style="width: 0%"></div>
-                    </div>
-                </div>
-
-                <div class="next-wave">
-                    <span>Next Wave:</span>
-                    <div id="next-wave-composition" class="next-wave-composition">
-                        <!-- Next wave preview will be added dynamically -->
-                    </div>
-                </div>
-            </div>
-
-            <div class="tower-section">
-                <div class="tower-cost">
-                    <span>Tower Cost:</span>
-                    <span id="tower-cost">50</span>
-                </div>
-                <button id="start-wave">Start Wave</button>
-            </div>
+            <div class="loading-text">Loading game assets...</div>
+            <div class="loading-progress">Initializing...</div>
         </div>
     </div>
 
-    <!-- Three.js -->
-    <script async src="https://unpkg.com/es-module-shims/dist/es-module-shims.js"></script>
+    <div id="game-container"></div>
+    
+    <div class="game-hud">
+        <div class="resources-section">
+            <div class="resource-item">
+                <span>Resources:</span>
+                <span id="resource-count">100</span>
+            </div>
+            <div class="resource-item">
+                <span>Health:</span>
+                <span id="health-count">100</span>
+            </div>
+        </div>
+
+        <div class="wave-section">
+            <div class="wave-info">
+                <h3>Wave <span id="wave-number">-</span></h3>
+                <div id="wave-composition" class="wave-composition">
+                    <!-- Enemy types will be added dynamically -->
+                </div>
+                <div class="progress-bar">
+                    <div id="wave-progress" class="progress-fill" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <div class="next-wave">
+                <span>Next Wave:</span>
+                <div id="next-wave-composition" class="next-wave-composition">
+                    <!-- Next wave preview will be added dynamically -->
+                </div>
+            </div>
+        </div>
+
+        <div class="tower-section">
+            <div class="tower-cost">
+                <span>Tower Cost:</span>
+                <span id="tower-cost">50</span>
+            </div>
+            <button id="start-wave">Start Wave</button>
+        </div>
+    </div>
+
+    <!-- ES Module Shims: Import maps polyfill -->
+    <script async src="https://ga.jspm.io/npm:es-module-shims@1.7.3/dist/es-module-shims.js"></script>
+    
+    <!-- Import map for Three.js -->
     <script type="importmap">
         {
             "imports": {
-                "three": "https://esm.sh/three@0.160.0",
-                "three/addons/": "https://esm.sh/three@0.160.0/examples/jsm/"
+                "three": "https://ga.jspm.io/npm:three@0.160.0/build/three.module.js",
+                "three/addons/": "https://ga.jspm.io/npm:three@0.160.0/examples/jsm/",
+                "three/addons/controls/OrbitControls.js": "https://ga.jspm.io/npm:three@0.160.0/examples/jsm/controls/OrbitControls.js"
             }
         }
     </script>
 
+    <script>
+        // Setup global error handler before loading modules
+        window.addEventListener('error', (event) => {
+            console.error('Script error:', event);
+            const loadingScreen = document.getElementById('loading-screen');
+            if (loadingScreen) {
+                loadingScreen.innerHTML = `
+                    <div class="error-message">
+                        <h2>Error Loading Game</h2>
+                        <p>${event.message || 'Failed to load required scripts. Please check your internet connection.'}</p>
+                        <p class="error-details">${event.filename ? `File: ${event.filename}` : ''}</p>
+                        <button onclick="location.reload()">Retry</button>
+                    </div>
+                `;
+            }
+        });
+
+        // Update loading progress
+        window.updateLoadingProgress = (message) => {
+            const progress = document.querySelector('.loading-progress');
+            if (progress) {
+                progress.textContent = message;
+            }
+        };
+    </script>
+
     <!-- Game Scripts -->
-    <script type="module" src="src/assets/GameAssets.js"></script>
-    <script type="module" src="src/core/Game.js"></script>
     <script type="module" src="src/main.js"></script>
 </body>
 </html>

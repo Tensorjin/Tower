@@ -75,10 +75,27 @@ export class WaveSystem {
     }
 
     isWaveComplete() {
-        // Check if the current wave is active and all enemies are gone
-        return this.game.gameState === GAME_STATES.WAVE_ACTIVE && 
-               this.game.enemies.length === 0 && 
-               this.remainingEnemies.length === 0;
+        // Only check completion if wave is active or spawning
+        if (this.game.gameState !== GAME_STATES.WAVE_ACTIVE && 
+            this.game.gameState !== GAME_STATES.WAVE_SPAWNING) {
+            return false;
+        }
+        
+        // Make sure all enemies are spawned and defeated
+        const noRemainingEnemies = this.remainingEnemies.length === 0;
+        const noActiveEnemies = this.game.enemies.length === 0;
+        const isComplete = noRemainingEnemies && noActiveEnemies;
+
+        if (isComplete) {
+            console.log('Wave completed:', {
+                currentWave: this.currentWave,
+                totalWaves: this.waveConfig.length,
+                remainingEnemies: this.remainingEnemies.length,
+                activeEnemies: this.game.enemies.length
+            });
+        }
+
+        return isComplete;
     }
 
     isAllWavesComplete() {
