@@ -183,10 +183,13 @@ export class UIManager {
                 this.startWaveButton.textContent = `Start Wave ${currentWave + 1}`;
                 
                 // Show next wave composition
-                if (waveData) {
-                    const currentWaveData = waveData[currentWave - 1];
-                    const nextWaveData = waveData[currentWave];
+                if (waveData && currentWave >= 0) {
+                    const currentWaveData = (currentWave > 0) ? waveData[currentWave - 1] : null;
+                    const nextWaveData = (currentWave < waveData.length) ? waveData[currentWave] : null;
                     this.updateWaveComposition(currentWaveData, nextWaveData);
+                } else {
+                    // Clear composition if no wave data available
+                    this.updateWaveComposition(null, null);
                 }
             } else {
                 this.startWaveButton.disabled = true;
