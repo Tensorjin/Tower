@@ -24,6 +24,15 @@ export class WaveSystem {
         if (this.currentWave === 0 || this.currentWave > this.waveConfig.length) {
             return 0;
         }
+        // Ensure wave data exists before calculating total
+        const waveData = this.waveConfig[this.currentWave - 1];
+        if (!waveData || !waveData.enemies) {
+            return 0;
+        }
+        // Calculate total if not already cached (or recalculate)
+        if (this.totalEnemiesInWave === 0 && waveData.enemies) {
+             this.totalEnemiesInWave = waveData.enemies.reduce((sum, group) => sum + group.count, 0);
+        }
         return this.totalEnemiesInWave;
     }
 
