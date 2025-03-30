@@ -15,56 +15,39 @@ import { EffectSystem } from '../systems/EffectSystem.js';
 
 export class Game {
     constructor() {
-        this.uiManager = new UIManager();
+        this.uiManager = new UIManager(); // Initialize UI Manager first
         this.uiManager.showLoading(true, "Starting game initialization...");
 
-        // Initialize the game with error handling
-        this.init().catch(error => {
-            console.error('Game initialization failed:', error);
-            this.uiManager.showError(`Failed to initialize game: ${error.message}`);
-            throw error; // Re-throw to trigger global error handler
-        });
-    }
-
-    async delay(ms) {
-        return new Promise(resolve => setTimeout(resolve, ms));
-    }
-
-    async init() {
         try {
-            this.uiManager.updateLoadingProgress("Initializing 3D scene...", "Setting up game environment");
             this.initializeScene();
-            await this.delay(300);
-
-            this.uiManager.updateLoadingProgress("Initializing game systems...", "Loading game mechanics");
-            await this.initializeManagers();
-            await this.delay(300);
-
-            this.uiManager.updateLoadingProgress("Setting up game world...", "Creating game world");
+            this.initializeManagersAndSystems(); // Initialize managers and systems synchronously
             this.setupWorld();
-            await this.delay(300);
 
-            this.uiManager.updateLoadingProgress("Initializing game state...", "Preparing for gameplay");
+            // Initialize game state
             this.gameState = GAME_STATES.IDLE;
             this.enemies = [];
             this.projectiles = [];
             this.effects = [];
-            await this.delay(300);
 
-            this.uiManager.updateLoadingProgress("Starting game engine...", "Almost ready!");
+            // Set initial UI state after everything is initialized
+            this.setGameState(GAME_STATES.IDLE); 
+
+            // Start game loop
             this.animate();
-            await this.delay(500);
 
-            this.uiManager.updateLoadingProgress("Game ready!", "Loading complete");
-            await this.delay(300);
+            // Hide loading screen after successful initialization
             this.uiManager.showLoading(false);
+            console.log("Game initialization complete.");
+
         } catch (error) {
-            console.error('Error during game initialization:', error);
-            throw error;
+            console.error('Game initialization failed:', error);
+            this.uiManager.showError(`Failed to initialize game: ${error.message}`);
+            // Optionally re-throw or handle cleanup
         }
     }
 
     initializeScene() {
+        console.log('Initializing scene...');
         // Core Three.js setup
         this.scene = new THREE.Scene();
         this.camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -75,13 +58,12 @@ export class Game {
         this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
         const container = document.getElementById('game-container');
-        if (!container) {
-            throw new Error('Game container not found');
-        }
+        if (!container) throw new Error('Game container not found');
         container.appendChild(this.renderer.domElement);
 
         this.setupCamera();
         this.setupLighting();
+        console.log('Scene initialized.');
     }
 
     setupCamera() {
@@ -114,11 +96,12 @@ export class Game {
         this.scene.add(directionalLight);
     }
 
-    async initializeManagers() {
+    initializeManagersAndSystems() {
+        console.log('Initializing managers and systems...');
         try {
             // Initialize managers
             this.resourceManager = new ResourceManager(this);
-            this.inputManager = new InputManager(this);
+            this.inputManager = new InputManager(this); // Depends on renderer
             this.towerManager = new TowerManager(this);
 
             // Initialize systems
@@ -126,42 +109,40 @@ export class Game {
             this.combatSystem = new CombatSystem(this);
             this.enemySystem = new EnemySystem(this);
             this.effectSystem = new EffectSystem(this);
-
-            // Set initial game state
-            this.setGameState(GAME_STATES.IDLE);
+            console.log('Managers and systems initialized.');
         } catch (error) {
-            console.error('Failed to initialize managers:', error);
-            throw error;
+            console.error('Failed to initialize managers/systems:', error);
+            throw error; // Propagate error
         }
     }
 
     setupWorld() {
+        console.log('Setting up world...');
         this.world = createGameWorld();
         this.scene.add(this.world);
         this.enemyPath = ENEMY_PATH;
+        console.log('World setup complete.');
     }
 
     animate() {
-        if (!this.renderer) return; // Guard against animation after cleanup
+        if (!this.renderer) return; 
 
         requestAnimationFrame(() => this.animate());
-        const deltaTime = 1/60; // Fixed time step
+        const deltaTime = 1/60; 
 
         try {
-            // Update controls
             this.controls.update();
 
-            // Update game state
             if (this.gameState !== GAME_STATES.GAME_OVER && 
                 this.gameState !== GAME_STATES.VICTORY) {
                 this.updateGameSystems(deltaTime);
                 this.checkWaveCompletion();
             }
 
-            // Render scene
             this.renderer.render(this.scene, this.camera);
         } catch (error) {
             console.error('Error in animation loop:', error);
+            // Consider pausing the game or showing an error state
         }
     }
 
@@ -188,39 +169,67 @@ export class Game {
         console.log('Game State Change:', {
             from: this.gameState,
             to: newState,
-            currentWave: this.waveSystem.getCurrentWaveNumber(),
-            activeEnemies: this.enemies.length,
-            remainingSpawns: this.waveSystem.remainingEnemies.length,
-            ...this.resourceManager.getStats()
+            currentWave: this.waveSystem?.getCurrentWaveNumber() ?? 0, // Handle potential undefined
+            activeEnemies: this.enemies?.length ?? 0,
+            remainingSpawns: this.waveSystem?.remainingEnemies?.length ?? 0,
+            ...(this.resourceManager?.getStats() ?? { resources: 'N/A', baseHealth: 'N/A', score: 'N/A' })
         });
 
         this.gameState = newState;
-        this.updateUI();
+        this.updateUI(); // Update UI after state change
     }
 
     updateUI() {
         try {
-            this.uiManager.updateUI(
-                this.gameState,
-                this.resourceManager.getStats(),
-                this.waveSystem.getCurrentWaveNumber(),
-                this.waveSystem.waveConfig
-            );
+            // Ensure managers are initialized before updating UI
+            if (this.uiManager && this.resourceManager && this.waveSystem) {
+                this.uiManager.updateUI(
+                    this.gameState,
+                    this.resourceManager.getStats(),
+                    this.waveSystem.getCurrentWaveNumber(),
+                    this.waveSystem.waveConfig
+                );
+            } else {
+                console.warn("Attempted to update UI before managers were ready.");
+            }
         } catch (error) {
             console.error('Error updating UI:', error);
         }
     }
 
+    // --- Event Handlers (Keep in Game or move to InputManager if preferred) ---
+     onWindowResize() {
+        if (!this.camera || !this.renderer) return;
+        this.camera.aspect = window.innerWidth / window.innerHeight;
+        this.camera.updateProjectionMatrix();
+        this.renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+
+    // --- Cleanup ---
     cleanup() {
+        console.log("Cleaning up game resources...");
         // Stop animation loop
-        this.renderer = null;
+        // How to stop requestAnimationFrame? Set a flag.
+        this.gameState = GAME_STATES.GAME_OVER; // Prevent further updates
 
-        // Clean up managers
-        this.inputManager?.cleanup();
-        this.towerManager?.cleanup();
+        // Clean up managers/systems that hold resources or listeners
+        this.inputManager?.cleanup(); 
+        this.towerManager?.cleanup(); 
 
-        // Clean up Three.js resources
+        // Dispose Three.js resources
+        this.scene?.traverse(object => {
+            if (object.geometry) object.geometry.dispose();
+            if (object.material) {
+                if (Array.isArray(object.material)) {
+                    object.material.forEach(material => material.dispose());
+                } else {
+                    object.material.dispose();
+                }
+            }
+        });
         this.scene?.clear();
         this.renderer?.dispose();
+        this.renderer = null; // Allow garbage collection
+        console.log("Cleanup complete.");
     }
 }
