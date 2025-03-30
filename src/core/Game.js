@@ -1,6 +1,16 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { createGameWorld, createEnemy, createBasicTower, createDeathEffect } from '../assets/GameAssets.js';
+import { 
+    createGameWorld,
+    createBasicTower,
+    createDeathEffect,
+    createBasicEnemy,
+    createFastEnemy,
+    createTankEnemy,
+    createFlyingEnemy,
+    createSwarmEnemy,
+    createBossEnemy
+} from '../assets/GameAssets.js';
 import { TOWER_COST, ENEMY_PATH, GAME_STATES } from '../utils/Constants.js';
 import { UIManager } from '../managers/UIManager.js';
 import { WaveSystem } from '../systems/WaveSystem.js';
@@ -224,17 +234,49 @@ export class Game {
     }
 
     // --- Entity Management ---
-    spawnEnemy() {
-        const enemy = createEnemy();
+    spawnEnemy(enemyType = 'basic') {
+        // Create enemy based on type
+        let enemy;
+        switch (enemyType) {
+            case 'fast':
+                enemy = createFastEnemy();
+                break;
+            case 'tank':
+                enemy = createTankEnemy();
+                break;
+            case 'flying':
+                enemy = createFlyingEnemy();
+                break;
+            case 'swarm':
+                enemy = createSwarmEnemy();
+                break;
+            case 'boss':
+                enemy = createBossEnemy();
+                break;
+            default:
+                enemy = createBasicEnemy();
+        }
+
+        // Set initial position and path data
         enemy.position.copy(this.enemyPath[0]);
-        enemy.userData.maxHealth = 100;
-        enemy.userData.health = enemy.userData.maxHealth;
         enemy.userData.pathIndex = 0;
-        enemy.userData.speed = 1.5;
+
+        // For flying enemies, add hover height to Y position
+        if (enemy.userData.flying) {
+            enemy.position.y += enemy.userData.hoverHeight || 0;
+        }
+
+        // Ensure health bar is visible and properly scaled
         if (enemy.userData.healthBar) {
-            enemy.userData.healthBar.group.visible = true; // Ensure visible on spawn
+            enemy.userData.healthBar.group.visible = true;
             this.updateEnemyHealthBar(enemy);
         }
+
+        // Add special behaviors for swarm enemies
+        if (enemy.userData.enemyType === 'swarm' && enemy.userData.units) {
+            enemy.userData.lastBobUpdate = 0;
+        }
+
         this.scene.add(enemy);
         this.enemies.push(enemy);
     }

@@ -45,9 +45,38 @@ export class EnemySystem {
                 enemy.position.add(direction.multiplyScalar(moveDistance));
             }
 
-            // Make health bar group face camera (billboarding)
+            // Special enemy type behaviors
+            switch (enemy.userData.enemyType) {
+                case 'swarm':
+                    // Animate individual swarm units
+                    if (enemy.userData.units) {
+                        const time = Date.now() * 0.001; // Current time in seconds
+                        for (const unit of enemy.userData.units) {
+                            const originalPos = unit.userData.originalPos;
+                            const bobSpeed = unit.userData.bobSpeed;
+                            const bobHeight = unit.userData.bobHeight;
+                            const bobOffset = unit.userData.bobOffset || 0;
+                            
+                            // Calculate new Y position based on sine wave
+                            const newY = originalPos.y + Math.sin(time * bobSpeed + bobOffset) * bobHeight;
+                            unit.position.y = newY;
+                        }
+                    }
+                    break;
+                    
+                case 'flying':
+                    // Maintain hover height and add subtle floating motion
+                    const hoverHeight = enemy.userData.hoverHeight || 2.0;
+                    const time = Date.now() * 0.001;
+                    enemy.position.y = this.enemyPath[enemy.userData.pathIndex].y + 
+                                    hoverHeight + 
+                                    Math.sin(time * 1.5) * 0.1; // Subtle up/down motion
+                    break;
+            }
+
+            // Make health bar face camera (billboarding)
             if (enemy.userData.healthBar && enemy.userData.healthBar.group) {
-                enemy.userData.healthBar.group.quaternion.copy(this.game.camera.quaternion); // Use game's camera
+                enemy.userData.healthBar.group.quaternion.copy(this.game.camera.quaternion);
             }
         }
     }

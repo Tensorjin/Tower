@@ -11,11 +11,48 @@ export const ENEMY_PATH = [
     new THREE.Vector3(13, ENEMY_Y_POS, 8.75),// End tile (x=6, z=5) -> x = (6 + 1*0.5)*2 = 13
 ];
 
-// Wave Configuration: [ { count: number, delay: seconds } ]
+// Wave Configuration with enemy types and spawn details
 export const WAVE_CONFIG = [
-    { count: 5, delay: 1.0 }, // Wave 1
-    { count: 8, delay: 0.8 }, // Wave 2
-    { count: 12, delay: 0.6 }, // Wave 3
+    {   // Wave 1: Basic enemies
+        enemies: [
+            { type: 'basic', count: 5 }
+        ],
+        delay: 1.0
+    },
+    {   // Wave 2: Basic + Fast enemies
+        enemies: [
+            { type: 'basic', count: 4 },
+            { type: 'fast', count: 3 }
+        ],
+        delay: 0.8
+    },
+    {   // Wave 3: Mixed enemies
+        enemies: [
+            { type: 'basic', count: 4 },
+            { type: 'fast', count: 4 },
+            { type: 'tank', count: 2 }
+        ],
+        delay: 0.7
+    },
+    {   // Wave 4: Tanks and Flying
+        enemies: [
+            { type: 'tank', count: 3 },
+            { type: 'flying', count: 4 }
+        ],
+        delay: 0.7
+    },
+    {   // Wave 5: Swarm wave
+        enemies: [
+            { type: 'swarm', count: 5 }
+        ],
+        delay: 0.8
+    },
+    {   // Wave 6: Final Boss wave
+        enemies: [
+            { type: 'boss', count: 1 }
+        ],
+        delay: 1.0
+    }
 ];
 
 export const GAME_STATES = {

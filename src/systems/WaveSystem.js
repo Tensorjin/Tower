@@ -5,34 +5,53 @@ export class WaveSystem {
         this.game = game; // Reference to the main game class
         this.waveConfig = WAVE_CONFIG;
         this.currentWave = 0;
-        this.enemiesToSpawn = 0;
+        this.remainingEnemies = [];    // Queue of enemies to spawn
         this.spawnTimer = 0;
         this.spawnDelay = 0;
     }
 
+    // Fisher-Yates shuffle algorithm
+    shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
     startNextWave() {
         const gameState = this.game.gameState;
-        if ((gameState === GAME_STATES.IDLE || gameState === GAME_STATES.WAVE_COMPLETE) && this.currentWave < this.waveConfig.length) {
+        if ((gameState === GAME_STATES.IDLE || gameState === GAME_STATES.WAVE_COMPLETE) 
+            && this.currentWave < this.waveConfig.length) {
             this.currentWave++;
             const waveData = this.waveConfig[this.currentWave - 1];
-            this.enemiesToSpawn = waveData.count;
             this.spawnDelay = waveData.delay;
-            this.spawnTimer = this.spawnDelay; // Start timer for first spawn
-            this.game.setGameState(GAME_STATES.WAVE_SPAWNING); // Update game state via game reference
-            console.log(`Starting Wave ${this.currentWave}`);
+            this.spawnTimer = this.spawnDelay;
+
+            // Create spawn queue from wave configuration
+            this.remainingEnemies = [];
+            for (const enemyGroup of waveData.enemies) {
+                for (let i = 0; i < enemyGroup.count; i++) {
+                    this.remainingEnemies.push(enemyGroup.type);
+                }
+            }
+            // Shuffle the spawn queue for variety
+            this.shuffleArray(this.remainingEnemies);
+
+            this.game.setGameState(GAME_STATES.WAVE_SPAWNING);
+            console.log(`Starting Wave ${this.currentWave} with ${this.remainingEnemies.length} enemies`);
         }
     }
 
     update(deltaTime) {
         if (this.game.gameState === GAME_STATES.WAVE_SPAWNING) {
             this.spawnTimer -= deltaTime;
-            if (this.spawnTimer <= 0 && this.enemiesToSpawn > 0) {
-                this.game.spawnEnemy(); // Call game's spawn function
-                this.enemiesToSpawn--;
-                this.spawnTimer = this.spawnDelay; // Reset timer for next spawn
+            if (this.spawnTimer <= 0 && this.remainingEnemies.length > 0) {
+                const enemyType = this.remainingEnemies.pop();
+                this.game.spawnEnemy(enemyType);
+                this.spawnTimer = this.spawnDelay;
 
-                if (this.enemiesToSpawn === 0) {
-                    // All enemies for this wave have been spawned
+                if (this.remainingEnemies.length === 0) {
                     this.game.setGameState(GAME_STATES.WAVE_ACTIVE);
                 }
             }
@@ -45,7 +64,9 @@ export class WaveSystem {
 
     isWaveComplete() {
         // Check if the current wave is active and all enemies are gone
-        return this.game.gameState === GAME_STATES.WAVE_ACTIVE && this.game.enemies.length === 0 && this.enemiesToSpawn === 0;
+        return this.game.gameState === GAME_STATES.WAVE_ACTIVE && 
+               this.game.enemies.length === 0 && 
+               this.remainingEnemies.length === 0;
     }
 
     isAllWavesComplete() {
